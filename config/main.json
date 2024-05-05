@@ -1,0 +1,13 @@
+{
+    "login": {
+        "username": "",
+        "password": ""
+    },
+    "bot": {
+        "token": "",
+        "clientId": ""
+    },
+    "channels": {
+        "main": " "
+    }
+}
