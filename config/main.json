@@ -1,13 +1,27 @@
 {
     "login": {
-        "username": "",
-        "password": ""
-    },
-    "bot": {
-        "token": "",
-        "clientId": ""
+        "twitch": {
+            "username": "",
+            "oauth_full": "",
+            "oauth_small": "",
+            "application": {
+                "secret": "",
+                "id": ""
+            }
+        },
+        "pishock": {
+            "username": "",
+            "password": "",
+            "key": ""
+        },
+        "discord": {
+            "webhook": ""
+        }
     },
     "channels": {
-        "main": " "
+        "main": ""
+    },
+    "settings": {
+        "prefix": ""
     }
 }
