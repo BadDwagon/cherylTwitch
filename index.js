@@ -16,23 +16,6 @@ const loginTwitch = {
 };
 const bot = new tmi.client(loginTwitch);
 
-/*async function piShock() {
-    const shockerInfo = await fetch("https://do.pishock.com/api/GetShockerInfo", {
-        method: "POST",
-        body: "Username=" + config.login.pishock.username + "&Password=" + config.login.pishock.password + "&ApiKey=" + config.login.pishock.key,
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    }).catch(error => {
-        console.error(error)
-    }).then(response => response.json())
-
-    fs.writeFileSync('./config/pishock.json', JSON.stringify(shockerInfo));
-    return shockerInfo;
-}
-
-piShock()*/
-
 // Give new token for twitch api
 async function updateToken() {
     const tokenFetch = await fetch("https://id.twitch.tv/oauth2/token", {
