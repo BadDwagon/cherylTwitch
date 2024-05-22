@@ -26,7 +26,14 @@
         "prefix": "!",
         "pîShock": {
             "enable": true,
-            "shock_on_bits": true
+            "bits": {
+                "enable": true,
+                "more_shock": false
+            },
+            "subs": {
+                "enable": false,
+                "more_shock": false
+            }
         },
         "logging": true
     }

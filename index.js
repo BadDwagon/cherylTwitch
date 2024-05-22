@@ -72,19 +72,20 @@ async function updateToken() {
 })();
 
 async function channelIsLive() {
-    const channel = await fetch(`https://www.twitch.tv/${config.channels.main}`);
-    const response = await channel.text();
-
     async function webhookSent() {
         await fetch(config.login.discord.webhook, {
             method: 'POST',
             body: JSON.stringify({
-                'content': 'A wild Dwagon is streaming right now! Come say hi!\n\nhttps://www.twitch.tv/dabaddwagon\n@everyone'
+                'content': 'A wild Dwagon is streaming right now! Come say hi!\n\nhttps://www.twitch.tv/dabaddwagon\n'
             }),
             headers: {
                 'Content-Type': 'application/json'
             }
-        });
+        }).then(r => {
+            console.log(r);
+        }).catch(error => {
+            console.log(error);
+        })
 
         return console.log('Stream Online')
     };
@@ -98,8 +99,11 @@ async function channelIsLive() {
     };
 
     async function lookUpStream() {
+        const channel = await fetch(`https://www.twitch.tv/${config.channels.main}`);
+        const response = await channel.text();
+
         if (response.includes('isLiveBroadcast')) {
-            webhookSent();
+            //webhookSent();
         } else {
             webhookNotSent();
         };
@@ -126,21 +130,49 @@ function globalCooldown() {
     }, 3000)
 };
 
+let logging = config.settings.logging === true;
+
+function logging_() {
+    path = `./logs/log-${new Date().toLocaleDateString()}.txt`;
+    fs.writeFile(path, log, { flag: 'a+' }, error => { });
+};
+
+let noCheer = false;
+
+bot.on('redeem', (channel, user, reward, tags) => {
+    date = new Date().toLocaleString();
+
+    if (logging) {
+        log = `[${date}] ${user} : ${reward} : ${tags.username}\n`;
+        console.log(log)
+
+        logging_();
+    };
+
+    noCheer = true;
+});
+
 bot.on('message', async (channel, user, message, self) => {
     if (self) return;
 
-    const date = new Date();
+    function replyCommand() {
+        bot.say(
+            channel,
+            choiceString
+        );
+    };
+
+    date = new Date().toLocaleString();
 
     ///////////////////////////////////////
     //  Log chat messages in a log file  //
     ///////////////////////////////////////
 
-    if (config.settings.logging === true) {
-        const log = `[${date.toLocaleString()}] ${user['display-name']} : ${message}\n`;
+    if (logging) {
+        log = `[${date}] ${user['display-name']} : ${message}\n`;
         console.log(log)
 
-        const path = `./logs/log-${date.toLocaleDateString()}.txt`;
-        fs.writeFile(path, log, { flag: 'a+' }, error => { });
+        logging_();
     };
 
     //////////////////////////////////
@@ -150,7 +182,7 @@ bot.on('message', async (channel, user, message, self) => {
     const piShock_Settings = config.settings.pîShock;
 
     if (piShock_Settings.enable === true) {
-        if (/Cheer\d/i.test(message)) {
+        if (message.match(/\sCheer\d/)) {
             if (piShock.online === false) return;
 
             async function shockSend() {
@@ -169,63 +201,46 @@ bot.on('message', async (channel, user, message, self) => {
                         'Content-Type': 'application/json'
                     }
                 }).catch(error => {
-                    console.error(error)
-                }).then(response => response.json());
+                    console.error(error);
+                });
             };
 
             function shockMessage() {
-                console.log(`Shocked for '${state_duration}' seconds with '${state_intensity}' of intensity.`)
+                if (logging) {
+                    log = `[${date}] Shocked for '${state_duration}' seconds with '${state_intensity}' of intensity by ${user['display-name']}\n`;
+                    console.log(log)
+
+                    logging_();
+                };
 
                 return shockSend();
             };
 
-            if (piShock_Settings.shock_on_bits === true) {
+            if (piShock_Settings.bits.enable === true) {
                 const bits = parseInt(message.match(/\d+/).toString());
 
-                if (bits <= 100) {
-                    state_op = 1;
+                if (bits <= 0) return;
+                if (noCheer === true) return;
+
+                console.log(message)
+
+                state_op = 0; // 0 = Shock, 1 = Vibrate, 3 = Beep
+
+                if (piShock_Settings.bits.more_shock) {
+                    state_duration = 5;
+                } else {
                     state_duration = 1;
-                    state_intensity = 10;
-                } else if (bits <= 300) {
-                    state_op = 1;
-                    state_duration = 1;
-                    state_intensity = 20;
-                } else if (bits <= 500) {
-                    state_op = 1;
-                    state_duration = 1;
-                    state_intensity = 30;
-                } else if (bits <= 700) {
-                    state_op = 1;
-                    state_duration = 1;
-                    state_intensity = 40;
-                } else if (bits <= 900) {
-                    state_op = 1;
-                    state_duration = 1;
-                    state_intensity = 50;
-                } else if (bits <= 1100) {
-                    state_op = 1;
-                    state_duration = 1;
-                    state_intensity = 60;
-                } else if (bits <= 1300) {
-                    state_op = 1;
-                    state_duration = 1;
-                    state_intensity = 70;
-                } else if (bits <= 1500) {
-                    state_op = 1;
-                    state_duration = 1;
-                    state_intensity = 80;
-                } else if (bits <= 1700) {
-                    state_op = 1;
-                    state_duration = 1;
-                    state_intensity = 90;
-                } else if (bits >= 1900) {
-                    state_op = 1;
-                    state_duration = 1;
+                };
+
+                intensity_bits = 0.05 * bits;
+                state_intensity = parseInt(intensity_bits.toString().match(/\d*/).toString()); // Remove dots to make it a round number
+
+                if (state_intensity > 100) {
                     state_intensity = 100;
                 };
 
                 return shockMessage();
-            } else if (piShock_Settings.shock_on_subs === true) {
+            } else if (piShock_Settings.subs.enable === true) {
                 return console.log('Being worked on! Please disable it')
             };
         };
@@ -241,13 +256,6 @@ bot.on('message', async (channel, user, message, self) => {
         let disallowStringCommand = message.replace(prefix, '');
 
         if (isGlobalCooldown === true) return;
-
-        function replyCommand() {
-            bot.say(
-                channel,
-                choiceString
-            );
-        };
 
         // Command doesn't allow string after
         switch (disallowStringCommand) {
@@ -289,13 +297,6 @@ bot.on('message', async (channel, user, message, self) => {
                 return globalCooldown();
         };
     };
-});
-
-bot.on('redeem', (channel, user, reward, tags) => {
-    const date = new Date();
-
-    const log = `[${date.toLocaleString()}] ${user} : ${reward} : ${tags.username}\n`;
-    console.log(log)
 });
 
 // Connect to Twitch
