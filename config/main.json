@@ -24,6 +24,10 @@
     },
     "settings": {
         "prefix": "!",
-        "pishock_more_shock": false
+        "pîShock": {
+            "enable": true,
+            "shock_on_bits": true
+        },
+        "logging": true
     }
 }

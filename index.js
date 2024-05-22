@@ -130,94 +130,113 @@ bot.on('message', async (channel, user, message, self) => {
     if (self) return;
 
     const date = new Date();
-    const bitsSent = /Cheer\d/i.test(message);
 
-    // Log chat messages in a log file
-    const log = `[${date.toLocaleString()}] ${user['display-name']} : ${message}\n`;
-    console.log(log)
+    ///////////////////////////////////////
+    //  Log chat messages in a log file  //
+    ///////////////////////////////////////
 
-    const path = `./logs/log-${date.toLocaleDateString()}.txt`;
-    fs.writeFile(path, log, { flag: 'a+' }, error => { });
+    if (config.settings.logging === true) {
+        const log = `[${date.toLocaleString()}] ${user['display-name']} : ${message}\n`;
+        console.log(log)
 
-    // Prefix of the command
-    const prefix = config.settings.prefix;
-
-    // PiShock Cheer Gift
-    if (bitsSent) {
-        if (piShock.online === false) return;
-
-        async function piShockOp() {
-            const shock = await fetch("https://do.pishock.com/api/apioperate/", {
-                method: "POST",
-                body: JSON.stringify({
-                    "Name": config.login.pishock.name,
-                    "Username": config.login.pishock.username,
-                    "Code": config.login.pishock.password,
-                    "Apikey": config.login.pishock.key,
-                    "Op": state_op,
-                    "Duration": state_duration,
-                    "Intensity": state_intensity
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).catch(error => {
-                console.error(error)
-            }).then(response => response.json())
-
-            return shock;
-        };
-
-        const bits = parseInt(message.match(/\d+/).toString());
-
-        if (bits <= 100) {
-            state_op = 1;
-            state_duration = 1;
-            state_intensity = 10;
-        } else if (bits <= 300) {
-            state_op = 1;
-            state_duration = 1;
-            state_intensity = 20;
-        } else if (bits <= 500) {
-            state_op = 1;
-            state_duration = 1;
-            state_intensity = 30;
-        } else if (bits <= 700) {
-            state_op = 1;
-            state_duration = 1;
-            state_intensity = 40;
-        } else if (bits <= 900) {
-            state_op = 1;
-            state_duration = 1;
-            state_intensity = 50;
-        } else if (bits <= 1100) {
-            state_op = 1;
-            state_duration = 1;
-            state_intensity = 60;
-        } else if (bits <= 1300) {
-            state_op = 1;
-            state_duration = 1;
-            state_intensity = 70;
-        } else if (bits <= 1500) {
-            state_op = 1;
-            state_duration = 1;
-            state_intensity = 80;
-        } else if (bits <= 1700) {
-            state_op = 1;
-            state_duration = 1;
-            state_intensity = 90;
-        } else if (bits >= 1900) {
-            state_op = 1;
-            state_duration = 1;
-            state_intensity = 100;
-        };
-
-        console.log(`Shocked for '${state_duration}' seconds with '${state_intensity}' of intensity.`)
-
-        return piShockOp();
+        const path = `./logs/log-${date.toLocaleDateString()}.txt`;
+        fs.writeFile(path, log, { flag: 'a+' }, error => { });
     };
 
-    // Commands
+    //////////////////////////////////
+    //  PiShock - Bits, Subs, etc.  //
+    //////////////////////////////////
+
+    const piShock_Settings = config.settings.pîShock;
+
+    if (piShock_Settings.enable === true) {
+        if (/Cheer\d/i.test(message)) {
+            if (piShock.online === false) return;
+
+            async function shockSend() {
+                await fetch("https://do.pishock.com/api/apioperate/", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        "Name": config.login.pishock.name,
+                        "Username": config.login.pishock.username,
+                        "Code": config.login.pishock.password,
+                        "Apikey": config.login.pishock.key,
+                        "Op": state_op,
+                        "Duration": state_duration,
+                        "Intensity": state_intensity
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).catch(error => {
+                    console.error(error)
+                }).then(response => response.json());
+            };
+
+            function shockMessage() {
+                console.log(`Shocked for '${state_duration}' seconds with '${state_intensity}' of intensity.`)
+
+                return shockSend();
+            };
+
+            if (piShock_Settings.shock_on_bits === true) {
+                const bits = parseInt(message.match(/\d+/).toString());
+
+                if (bits <= 100) {
+                    state_op = 1;
+                    state_duration = 1;
+                    state_intensity = 10;
+                } else if (bits <= 300) {
+                    state_op = 1;
+                    state_duration = 1;
+                    state_intensity = 20;
+                } else if (bits <= 500) {
+                    state_op = 1;
+                    state_duration = 1;
+                    state_intensity = 30;
+                } else if (bits <= 700) {
+                    state_op = 1;
+                    state_duration = 1;
+                    state_intensity = 40;
+                } else if (bits <= 900) {
+                    state_op = 1;
+                    state_duration = 1;
+                    state_intensity = 50;
+                } else if (bits <= 1100) {
+                    state_op = 1;
+                    state_duration = 1;
+                    state_intensity = 60;
+                } else if (bits <= 1300) {
+                    state_op = 1;
+                    state_duration = 1;
+                    state_intensity = 70;
+                } else if (bits <= 1500) {
+                    state_op = 1;
+                    state_duration = 1;
+                    state_intensity = 80;
+                } else if (bits <= 1700) {
+                    state_op = 1;
+                    state_duration = 1;
+                    state_intensity = 90;
+                } else if (bits >= 1900) {
+                    state_op = 1;
+                    state_duration = 1;
+                    state_intensity = 100;
+                };
+
+                return shockMessage();
+            } else if (piShock_Settings.shock_on_subs === true) {
+                return console.log('Being worked on! Please disable it')
+            };
+        };
+    };
+
+    ///////////////
+    //  Command  //
+    ///////////////
+
+    const prefix = config.settings.prefix;
+
     if (message[0] === prefix) {
         let disallowStringCommand = message.replace(prefix, '');
 
