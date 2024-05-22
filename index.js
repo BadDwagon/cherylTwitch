@@ -84,13 +84,11 @@ async function channelIsLive() {
             headers: {
                 'Content-Type': 'application/json'
             }
-        }).then(r => {
-            console.log(r);
         }).catch(error => {
             console.log(error);
-        })
+        });
 
-        return console.log('Stream Online')
+        return console.log('Stream Online');
     };
 
     async function webhookNotSent() {
@@ -98,7 +96,7 @@ async function channelIsLive() {
             lookUpStream()
         }, 30000);
 
-        console.log('Stream Offline')
+        console.log('Stream Offline');
     };
 
     async function lookUpStream() {
