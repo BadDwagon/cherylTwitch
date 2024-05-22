@@ -10,6 +10,7 @@
             }
         },
         "pishock": {
+            "name": "Cheryl - Twitch",
             "username": "",
             "password": "",
             "key": ""
@@ -22,6 +23,7 @@
         "main": ""
     },
     "settings": {
-        "prefix": ""
+        "prefix": "!",
+        "pishock_more_shock": false
     }
 }

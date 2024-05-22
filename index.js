@@ -3,6 +3,7 @@ let fs = require('fs');
 
 let config = require('./config/main.json');
 let oauth = require('./config/oauth.json');
+let piShock = require('./config/pishock.json');
 
 // Login to bot account
 const loginTwitch = {
@@ -15,6 +16,28 @@ const loginTwitch = {
     ]
 };
 const bot = new tmi.client(loginTwitch);
+
+async function piShockInfo() {
+    const shockerInfo = await fetch("https://do.pishock.com/api/GetShockerInfo", {
+        method: "POST",
+        body: JSON.stringify({
+            "Name": config.login.pishock.name,
+            "Username": config.login.pishock.username,
+            "Code": config.login.pishock.password,
+            "Apikey": config.login.pishock.key
+        }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).catch(error => {
+        console.error(error)
+    }).then(response => response.json())
+
+    fs.writeFileSync('./config/pishock.json', JSON.stringify(shockerInfo));
+    return shockerInfo;
+};
+
+piShockInfo();
 
 // Give new token for twitch api
 async function updateToken() {
@@ -56,14 +79,14 @@ async function channelIsLive() {
         await fetch(config.login.discord.webhook, {
             method: 'POST',
             body: JSON.stringify({
-                'content': 'A wild Dwagon is streaming right now! Come say hi!\n\nhttps://www.twitch.tv/dabaddwagon\n'
+                'content': 'A wild Dwagon is streaming right now! Come say hi!\n\nhttps://www.twitch.tv/dabaddwagon\n@everyone'
             }),
             headers: {
                 'Content-Type': 'application/json'
             }
         });
 
-        console.log('Stream Online')
+        return console.log('Stream Online')
     };
 
     async function webhookNotSent() {
@@ -71,14 +94,14 @@ async function channelIsLive() {
             lookUpStream()
         }, 30000);
 
-        console.log('Steam Offline')
+        console.log('Stream Offline')
     };
 
     async function lookUpStream() {
         if (response.includes('isLiveBroadcast')) {
             webhookSent();
         } else {
-            webhookNotSent()
+            webhookNotSent();
         };
     };
 
@@ -107,6 +130,7 @@ bot.on('message', async (channel, user, message, self) => {
     if (self) return;
 
     const date = new Date();
+    const bitsSent = /Cheer\d/i.test(message);
 
     // Log chat messages in a log file
     const log = `[${date.toLocaleString()}] ${user['display-name']} : ${message}\n`;
@@ -117,6 +141,81 @@ bot.on('message', async (channel, user, message, self) => {
 
     // Prefix of the command
     const prefix = config.settings.prefix;
+
+    // PiShock Cheer Gift
+    if (bitsSent) {
+        if (piShock.online === false) return;
+
+        async function piShockOp() {
+            const shock = await fetch("https://do.pishock.com/api/apioperate/", {
+                method: "POST",
+                body: JSON.stringify({
+                    "Name": config.login.pishock.name,
+                    "Username": config.login.pishock.username,
+                    "Code": config.login.pishock.password,
+                    "Apikey": config.login.pishock.key,
+                    "Op": state_op,
+                    "Duration": state_duration,
+                    "Intensity": state_intensity
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).catch(error => {
+                console.error(error)
+            }).then(response => response.json())
+
+            return shock;
+        };
+
+        const bits = parseInt(message.match(/\d+/).toString());
+
+        if (bits <= 100) {
+            state_op = 1;
+            state_duration = 1;
+            state_intensity = 10;
+        } else if (bits <= 300) {
+            state_op = 1;
+            state_duration = 1;
+            state_intensity = 20;
+        } else if (bits <= 500) {
+            state_op = 1;
+            state_duration = 1;
+            state_intensity = 30;
+        } else if (bits <= 700) {
+            state_op = 1;
+            state_duration = 1;
+            state_intensity = 40;
+        } else if (bits <= 900) {
+            state_op = 1;
+            state_duration = 1;
+            state_intensity = 50;
+        } else if (bits <= 1100) {
+            state_op = 1;
+            state_duration = 1;
+            state_intensity = 60;
+        } else if (bits <= 1300) {
+            state_op = 1;
+            state_duration = 1;
+            state_intensity = 70;
+        } else if (bits <= 1500) {
+            state_op = 1;
+            state_duration = 1;
+            state_intensity = 80;
+        } else if (bits <= 1700) {
+            state_op = 1;
+            state_duration = 1;
+            state_intensity = 90;
+        } else if (bits >= 1900) {
+            state_op = 1;
+            state_duration = 1;
+            state_intensity = 100;
+        };
+
+        console.log(`Shocked for '${state_duration}' seconds with '${state_intensity}' of intensity.`)
+
+        return piShockOp();
+    };
 
     // Commands
     if (message[0] === prefix) {
