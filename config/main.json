@@ -24,7 +24,7 @@
     },
     "settings": {
         "prefix": "!",
-        "pîShock": {
+        "piShock": {
             "enable": true,
             "bits": {
                 "enable": true,
@@ -33,6 +33,13 @@
             "subs": {
                 "enable": false,
                 "more_shock": false
+            }
+        },
+        "discord": {
+            "enable": true,
+            "alert": {
+                "enable": true,
+                "message": ""
             }
         },
         "logging": true
