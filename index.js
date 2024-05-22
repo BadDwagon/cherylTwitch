@@ -5,6 +5,9 @@ let config = require('./config/main.json');
 let oauth = require('./config/oauth.json');
 let piShock = require('./config/pishock.json');
 
+let discord_settings = config.settings.discord;
+let piShock_settings = config.settings.piShock;
+
 // Login to bot account
 const loginTwitch = {
     identity: {
@@ -76,7 +79,7 @@ async function channelIsLive() {
         await fetch(config.login.discord.webhook, {
             method: 'POST',
             body: JSON.stringify({
-                'content': 'A wild Dwagon is streaming right now! Come say hi!\n\nhttps://www.twitch.tv/dabaddwagon\n'
+                'content': discord_settings.alert.message,
             }),
             headers: {
                 'Content-Type': 'application/json'
@@ -103,7 +106,7 @@ async function channelIsLive() {
         const response = await channel.text();
 
         if (response.includes('isLiveBroadcast')) {
-            //webhookSent();
+            webhookSent();
         } else {
             webhookNotSent();
         };
@@ -179,9 +182,7 @@ bot.on('message', async (channel, user, message, self) => {
     //  PiShock - Bits, Subs, etc.  //
     //////////////////////////////////
 
-    const piShock_Settings = config.settings.pîShock;
-
-    if (piShock_Settings.enable === true) {
+    if (piShock_settings.enable === true) {
         if (message.match(/\sCheer\d/)) {
             if (piShock.online === false) return;
 
@@ -216,7 +217,7 @@ bot.on('message', async (channel, user, message, self) => {
                 return shockSend();
             };
 
-            if (piShock_Settings.bits.enable === true) {
+            if (piShock_settings.bits.enable === true) {
                 const bits = parseInt(message.match(/\d+/).toString());
 
                 if (bits <= 0) return;
@@ -226,7 +227,7 @@ bot.on('message', async (channel, user, message, self) => {
 
                 state_op = 0; // 0 = Shock, 1 = Vibrate, 3 = Beep
 
-                if (piShock_Settings.bits.more_shock) {
+                if (piShock_settings.bits.more_shock) {
                     state_duration = 5;
                 } else {
                     state_duration = 1;
@@ -240,7 +241,7 @@ bot.on('message', async (channel, user, message, self) => {
                 };
 
                 return shockMessage();
-            } else if (piShock_Settings.subs.enable === true) {
+            } else if (piShock_settings.subs.enable === true) {
                 return console.log('Being worked on! Please disable it')
             };
         };
